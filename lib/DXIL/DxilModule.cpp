@@ -77,6 +77,8 @@ const char *kFP32DenormKindString = "fp32-denorm-mode";
 const char *kFP32DenormValueAnyString = "any";
 const char *kFP32DenormValuePreserveString = "preserve";
 const char *kFP32DenormValueFtzString = "ftz";
+const char *kIsInputVectorSignedString = "input-vector-signed";
+const char *kIsResultSignedString = "result-vector-signed";
 
 const char *kDxBreakFuncName = "dx.break";
 const char *kDxBreakCondName = "dx.break.cond";

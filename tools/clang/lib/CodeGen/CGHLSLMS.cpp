@@ -1392,6 +1392,16 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
     if (FD->hasAttr<HLSLWaveSensitiveAttr>())
       hlsl::SetHLWaveSensitive(F);
 
+    HLOpcodeGroup group = hlsl::GetHLOpcodeGroup(F);
+    if (intrinsicOpcode == static_cast<unsigned>(IntrinsicOp::IOP_MatMul) &&
+        group == HLOpcodeGroup::HLIntrinsic) {
+      F->addFnAttr(DXIL::kIsInputVectorSignedString);
+      if (F->hasFnAttribute(DXIL::kIsInputVectorSignedString)) {
+        F->addFnAttr(DXIL::kIsResultSignedString);
+      }
+      
+    }
+
     // Don't need to add FunctionQual for intrinsic function.
     return;
   }
@@ -1406,6 +1416,7 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
              DXIL::Float32DenormMode::Any) {
     F->addFnAttr(DXIL::kFP32DenormKindString, DXIL::kFP32DenormValueAnyString);
   }
+  F->addFnAttr(DXIL::kFP32DenormKindString, DXIL::kFP32DenormValueFtzString);
   // Set entry function
   const ShaderModel *SM = m_pHLModule->GetShaderModel();
   const std::string &entryName = m_pHLModule->GetEntryFunctionName();
@@ -1841,7 +1852,7 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
       funcProps->numThreads[2] = 1;
     }
   }
-
+ 
   const unsigned profileAttributes =
       isCS + isHS + isDS + isGS + isVS + isPS + isRay + isMS + isAS + isNode;
 

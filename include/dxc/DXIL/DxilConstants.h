@@ -1953,6 +1953,8 @@ extern const char *kFP32DenormKindString;
 extern const char *kFP32DenormValueAnyString;
 extern const char *kFP32DenormValuePreserveString;
 extern const char *kFP32DenormValueFtzString;
+extern const char *kIsInputVectorSignedString;
+extern const char *kIsResultSignedString;
 
 extern const char *kDxBreakFuncName;
 extern const char *kDxBreakCondName;

@@ -6264,10 +6264,15 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
 
   hlsl::OP *hlslOP = &helper.hlslOP;
   IRBuilder<> Builder(CI);
+  Function *CalledFunction = CI->getCalledFunction();
+  unsigned isIpSigned = 0;
+  if (CalledFunction->hasFnAttribute(DXIL::kIsInputVectorSignedString)) {
+    isIpSigned = 1;
+  }
   Function *dxilFunc = hlslOP->GetOpFunc(opcode, CI->getType());
   Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
   Value *inputVector = CI->getArgOperand(HLOperandIndex::kInputVectorIdx);
-  Value *isInputSigned = Builder.getInt1(0);
+  Value *isInputSigned = Builder.getInt1(isIpSigned);
   Value *inputInterpretation =
       CI->getArgOperand(HLOperandIndex::kInputInterpretationIdx);
   Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kMatrixBufferIdx);

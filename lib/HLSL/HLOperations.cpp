@@ -29,6 +29,10 @@ static const char *const HLLowerStrategy = HLLowerStrategyStr;
 
 static const char HLWaveSensitiveStr[] = "dx.wave-sensitive";
 static const char *const HLWaveSensitive = HLWaveSensitiveStr;
+const char *kIsInputVectorSignedString = "input-vector-signed";
+const char *kIsResultSignedString = "result-vector-signed";
+
+
 
 static StringRef HLOpcodeGroupNames[]{
     "notHLDXIL",    // NotHL,
@@ -495,6 +499,7 @@ static AttributeSet GetHLFunctionAttributes(LLVMContext &C,
   copyAttr(Attribute::ReadOnly);
   copyAttr(Attribute::ReadNone);
   copyStrAttr(HLWaveSensitive);
+  copyStrAttr(kIsResultSignedString);
 
   switch (group) {
   case HLOpcodeGroup::HLUnOp:
