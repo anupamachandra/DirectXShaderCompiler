@@ -6264,7 +6264,10 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
 
   hlsl::OP *hlslOP = &helper.hlslOP;
   IRBuilder<> Builder(CI);
-  Function *dxilFunc = hlslOP->GetOpFunc(opcode, CI->getType());
+  //Function *dxilFunc = hlslOP->GetOpFunc(opcode, CI->getType());
+  Function *dxilFunc =
+      hlslOP->GetOpFunc(opcode, CI->getArgOperand(HLOperandIndex::kOutputVectorIdx)
+                  ->getType()->getPointerElementType());
   Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
   Value *inputVector = CI->getArgOperand(HLOperandIndex::kInputVectorIdx);
   Value *isInputSigned = Builder.getInt1(0);
@@ -6283,21 +6286,19 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   Value *isOutputSigned = Builder.getInt1(0);
    
 
-   return Builder.CreateCall(dxilFunc,
-                              {opArg, 
-                              inputVector, 
-                              isInputSigned, 
-                              inputInterpretation, 
-                              matrixBuffer, 
-                              matrixOffset, 
-                              matrixInterpretation, 
-                              matrixM,
-                              matrixK,
-                              matrixLayout,
-                              matrixTranspose,
-                              matrixStride,
-                              isOutputSigned});
+   Value* NewCI = Builder.CreateCall(dxilFunc,
+                     {opArg, inputVector, isInputSigned, inputInterpretation,
+                      matrixBuffer, matrixOffset, matrixInterpretation, matrixM,
+                      matrixK, matrixLayout, matrixTranspose, matrixStride,
+                      isOutputSigned});
+
+   Value *OutParam = CI->getArgOperand(HLOperandIndex::kOutputVectorIdx);
+   Builder.CreateStore(NewCI, OutParam);
+   //CI->eraseFromParent();
   
+  //OutParam->replaceAllUsesWith(NewCI);
+  //CI->eraseFromParent();
+  return nullptr;
   /* IRBuilder<> Builder(CI);
   return UndefValue::get(CI->getType());*/
 }
@@ -6611,7 +6612,14 @@ IntrinsicLower gLowerTable[] = {
     {IntrinsicOp::IOP_log10, TranslateLog10, DXIL::OpCode::NumOpCodes},
     {IntrinsicOp::IOP_log2, TrivialUnaryOperation, DXIL::OpCode::Log},
     {IntrinsicOp::IOP_mad, TranslateFUITrinary, DXIL::OpCode::IMad},
-    {IntrinsicOp::IOP_MatMul, TranslateMatVecMul, DXIL::OpCode::MatVecMul},
+    {IntrinsicOp::IOP___builtin_MatVecMul, TranslateMatVecMul,
+     DXIL::OpCode::MatVecMul},
+    {IntrinsicOp::IOP___builtin_MatVecMulAdd, TranslateMatVecMul,
+     DXIL::OpCode::MatVecMul},
+    {IntrinsicOp::IOP___builtin_OuterProductAccumulate, TranslateMatVecMul,
+     DXIL::OpCode::MatVecMul},
+    {IntrinsicOp::IOP___builtin_VectorAccumulate, TranslateMatVecMul,
+     DXIL::OpCode::MatVecMul},
     {IntrinsicOp::IOP_max, TranslateFUIBinary, DXIL::OpCode::IMax},
     {IntrinsicOp::IOP_min, TranslateFUIBinary, DXIL::OpCode::IMin},
     {IntrinsicOp::IOP_modf, TranslateModF, DXIL::OpCode::NumOpCodes},

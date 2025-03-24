@@ -430,16 +430,28 @@ const unsigned kAnnotateNodeHandleNodePropIdx = 2;
 const unsigned kAnnotateNodeRecordHandleNodeRecordPropIdx = 2;
 
 // Linear Algebra MatVecMul(Add)
-const unsigned kInputVectorIdx = 1;
-const unsigned kInputInterpretationIdx = 2;
-const unsigned kMatrixBufferIdx = 3;
-const unsigned kMatrixOffsetIdx = 4;
-const unsigned kMatrixInterpretationIdx = 5;
-const unsigned kMatrixMIdx = 6;
-const unsigned kMatrixKIdx = 7;
-const unsigned kMatrixLayoutIdx = 8;
-const unsigned kMatrixTransposeIdx = 9;
-const unsigned kMatrixStrideIdx = 10;
+//const unsigned kInputVectorIdx = 1;
+//const unsigned kInputInterpretationIdx = 2;
+//const unsigned kMatrixBufferIdx = 3;
+//const unsigned kMatrixOffsetIdx = 4;
+//const unsigned kMatrixInterpretationIdx = 5;
+//const unsigned kMatrixMIdx = 6;
+//const unsigned kMatrixKIdx = 7;
+//const unsigned kMatrixLayoutIdx = 8;
+//const unsigned kMatrixTransposeIdx = 9;
+//const unsigned kMatrixStrideIdx = 10;
+
+const unsigned kOutputVectorIdx = 1;
+const unsigned kInputVectorIdx = 2;
+const unsigned kInputInterpretationIdx = 3;
+const unsigned kMatrixBufferIdx = 4;
+const unsigned kMatrixOffsetIdx = 5;
+const unsigned kMatrixInterpretationIdx = 6;
+const unsigned kMatrixMIdx = 7;
+const unsigned kMatrixKIdx = 8;
+const unsigned kMatrixLayoutIdx = 9;
+const unsigned kMatrixTransposeIdx = 10;
+const unsigned kMatrixStrideIdx = 11;
 
 } // namespace HLOperandIndex
 

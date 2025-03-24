@@ -381,7 +381,14 @@ void [[]] Barrier(in NodeRecordOrUAV o, in uint SemanticFlags);
 uint [[]] GetRemainingRecursionLevels();
 
 // Linear Algebra Intrinsics
-numeric<c> [[]] MatMul(in numeric<c> input_vector, in uint input_interpretation, in ByteAddressBuffer input_matrix, in uint matrix_offset, in uint matrix_interpretation, in uint M, in uint K, in uint matrix_layout, in bool matrix_is_transposed, in uint matrix_stride);
+void [[]] __builtin_MatVecMul(in numeric<c> input_vector, in uint input_interpretation, in ByteAddressBuffer input_matrix, in uint matrix_offset, in uint matrix_interpretation, in uint M, in uint K, in uint matrix_layout, in bool matrix_is_transposed, in uint matrix_stride, out numeric<c2> output_vector);
+
+void [[]] __builtin_MatVecMulAdd(in numeric<c> input_vector, in uint input_interpretation, in ByteAddressBuffer input_matrix, in uint matrix_offset, in uint matrix_interpretation, in uint M, in uint K, in uint matrix_layout, in bool matrix_is_transposed, in uint matrix_stride, in ByteAddressBuffer bias_vector, in uint bias_offset, in uint bias_interpretation, out numeric<c2> output_vector);
+
+void [[]] __builtin_OuterProductAccumulate(in numeric<c> input_vector1, in numeric<c2> input_vector2, in RWByteAddressBuffer acc_matrix, in uint matrix_offset, in uint matrix_interpretation, in uint matrix_stride);
+
+void [[]] __builtin_VectorAccumulate(in numeric<c> input_vector, in RWByteAddressBuffer acc_matrix, in uint matrix_offset);
+
 } namespace
 
 
