@@ -6158,6 +6158,46 @@ Value *TranslateSelect(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   }
   return Builder.CreateSelect(cond, t, f);
 }
+
+Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
+                          HLOperationLowerHelper &helper,
+                          HLObjectOperationLowerHelper *pObjHelper,
+                          bool &Translated) {
+
+  hlsl::OP *hlslOP = &helper.hlslOP;
+  IRBuilder<> Builder(CI);
+  Function *dxilFunc = hlslOP->GetOpFunc(
+      opcode, CI->getArgOperand(HLOperandIndex::kOutputVectorIdx)
+                  ->getType()
+                  ->getPointerElementType());
+  Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
+  Value *inputVector = CI->getArgOperand(HLOperandIndex::kInputVectorIdx);
+  Value *isInputSigned = Builder.getInt1(0);
+  Value *inputInterpretation =
+      CI->getArgOperand(HLOperandIndex::kInputInterpretationIdx);
+  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kMatrixBufferIdx);
+  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kMatrixOffsetIdx);
+  Value *matrixInterpretation =
+      CI->getArgOperand(HLOperandIndex::kMatrixInterpretationIdx);
+  Value *matrixM = CI->getArgOperand(HLOperandIndex::kMatrixMIdx);
+  Value *matrixK = CI->getArgOperand(HLOperandIndex::kMatrixKIdx);
+  Value *matrixLayout = CI->getArgOperand(HLOperandIndex::kMatrixLayoutIdx);
+  Value *matrixTranspose =
+      CI->getArgOperand(HLOperandIndex::kMatrixTransposeIdx);
+  Value *matrixStride = CI->getArgOperand(HLOperandIndex::kMatrixStrideIdx);
+  Value *isOutputSigned = Builder.getInt1(0);
+
+  Value *NewCI = Builder.CreateCall(
+      dxilFunc,
+      {opArg, inputVector, isInputSigned, inputInterpretation, matrixBuffer,
+       matrixOffset, matrixInterpretation, matrixM, matrixK, matrixLayout,
+       matrixTranspose, matrixStride, isOutputSigned});
+
+  Value *OutParam = CI->getArgOperand(HLOperandIndex::kOutputVectorIdx);
+  Builder.CreateStore(NewCI, OutParam);
+
+  return nullptr;
+}
 } // namespace
 
 // Lower table.
@@ -6393,6 +6433,14 @@ IntrinsicLower gLowerTable[] = {
      DXIL::OpCode::WorldToObject},
     {IntrinsicOp::IOP_WorldToObject4x3,
      TranslateNoArgTransposedMatrix3x4Operation, DXIL::OpCode::WorldToObject},
+    {IntrinsicOp::IOP___builtin_MatVecMul, TranslateMatVecMul,
+      DXIL::OpCode::MatVecMul},
+    {IntrinsicOp::IOP___builtin_MatVecMulAdd, TranslateMatVecMul,
+     DXIL::OpCode::MatVecMulAdd},
+    {IntrinsicOp::IOP___builtin_OuterProductAccumulate, TranslateMatVecMul,
+     DXIL::OpCode::OuterProductAccumulate},
+    {IntrinsicOp::IOP___builtin_VectorAccumulate, TranslateMatVecMul,
+     DXIL::OpCode::VectorAccumulate},
     {IntrinsicOp::IOP_abort, EmptyLower, DXIL::OpCode::NumOpCodes},
     {IntrinsicOp::IOP_abs, TranslateAbs, DXIL::OpCode::NumOpCodes},
     {IntrinsicOp::IOP_acos, TrivialUnaryOperation, DXIL::OpCode::Acos},
