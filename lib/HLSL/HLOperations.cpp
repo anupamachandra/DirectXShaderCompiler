@@ -495,8 +495,6 @@ static AttributeSet GetHLFunctionAttributes(LLVMContext &C,
   copyAttr(Attribute::ReadOnly);
   copyAttr(Attribute::ReadNone);
   copyStrAttr(HLWaveSensitive);
-  copyStrAttr("OutputIsSigned");
-  copyStrAttr("InputIsSigned");
 
   switch (group) {
   case HLOpcodeGroup::HLUnOp:
@@ -594,8 +592,6 @@ static std::string GetHLFunctionAttributeMangling(const AttributeSet &attribs) {
             assert(it->getValueAsString() == "y" &&
                    "otherwise, unexpected value for WaveSensitive attribute");
             WaveSensitive = true;
-          } else if (Kind == "OutputIsSigned" || Kind == "InputIsSigned") {
-            // Pass through
           } else {
             assert(Kind == "dx.hlls" &&
                    "unexpected string function attribute for HLOperation");
