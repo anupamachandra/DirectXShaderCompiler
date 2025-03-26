@@ -6268,7 +6268,7 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
   // input
   Value *inputVector = CI->getArgOperand(HLOperandIndex::kMatVecMulInputVectorIdx);
-  Value *isInputSigned = Builder.getInt1(0);
+  Value *isInputSigned = Builder.getInt1(CI->getCalledFunction()->hasFnAttribute("InputIsSigned"));
   Value *inputInterpretation =
       CI->getArgOperand(HLOperandIndex::kMatVecMulInputInterpretationIdx);
   // matrix
@@ -6283,7 +6283,7 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
       CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixTransposeIdx);
   Value *matrixStride = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixStrideIdx);
   // output
-  Value *isOutputSigned = Builder.getInt1(0);
+  Value *isOutputSigned = Builder.getInt1(CI->getCalledFunction()->hasFnAttribute("OutputIsSigned"));
 
   Function *dxilFunc =
        hlslOP->GetOpFunc(opcode, {CI->getArgOperand(HLOperandIndex::kMatVecMulOutputVectorIdx)
@@ -6313,7 +6313,7 @@ Value *TranslateMatVecMulAdd(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
   // input vector
   Value *inputVector = CI->getArgOperand(HLOperandIndex::kMatVecMulAddInputVectorIdx);
-  Value *isInputSigned = Builder.getInt1(0);
+  Value *isInputSigned = Builder.getInt1(CI->getCalledFunction()->hasFnAttribute("InputIsSigned"));
   Value *inputInterpretation =
       CI->getArgOperand(HLOperandIndex::kMatVecMulAddInputInterpretationIdx);
  // matrix
@@ -6332,7 +6332,7 @@ Value *TranslateMatVecMulAdd(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   Value *biasOffset = CI->getArgOperand(HLOperandIndex::kMatVecMulAddBiasOffsetIdx);
   Value *biasInterpretation = CI->getArgOperand(HLOperandIndex::kMatVecMulAddBiasInterpretationIdx);
   // output
-  Value *isOutputSigned = Builder.getInt1(0);
+  Value *isOutputSigned = Builder.getInt1(CI->getCalledFunction()->hasFnAttribute("OutputIsSigned"));
 
   Function *dxilFunc =
        hlslOP->GetOpFunc(opcode, {CI->getArgOperand(HLOperandIndex::kMatVecMulAddOutputVectorIdx)

@@ -1392,6 +1392,29 @@ void CGMSHLSLRuntime::AddHLSLFunctionInfo(Function *F, const FunctionDecl *FD) {
     if (FD->hasAttr<HLSLWaveSensitiveAttr>())
       hlsl::SetHLWaveSensitive(F);
 
+    HLOpcodeGroup group = hlsl::GetHLOpcodeGroup(F);
+    bool isMatVecOp =
+        intrinsicOpcode ==
+            static_cast<unsigned>(IntrinsicOp::IOP___builtin_MatVecMul) ||
+        intrinsicOpcode ==
+            static_cast<unsigned>(IntrinsicOp::IOP___builtin_MatVecMulAdd);
+
+    if (group == HLOpcodeGroup::HLIntrinsic && isMatVecOp) {
+
+      const ParmVarDecl *OutputVector = FD->getParamDecl(0);
+      QualType OutputVectorTy = OutputVector->getType();
+      auto OutputElementTy = hlsl::GetHLSLVecElementType(OutputVectorTy);
+      if (OutputElementTy->isSignedIntegerType()) {
+        F->addFnAttr("OutputIsSigned");
+      }
+      
+      const ParmVarDecl *InputVector = FD->getParamDecl(1);
+      QualType InputVectorTy = InputVector->getType();
+      auto InputElementTy = hlsl::GetHLSLVecElementType(InputVectorTy);
+      if (InputElementTy->isSignedIntegerType()) {
+        F->addFnAttr("InputIsSigned");
+      }
+    }
     // Don't need to add FunctionQual for intrinsic function.
     return;
   }
