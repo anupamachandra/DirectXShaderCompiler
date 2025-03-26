@@ -6266,24 +6266,27 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
   IRBuilder<> Builder(CI);
 
   Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
-  Value *inputVector = CI->getArgOperand(HLOperandIndex::kInputVectorIdx);
+  // input
+  Value *inputVector = CI->getArgOperand(HLOperandIndex::kMatVecMulInputVectorIdx);
   Value *isInputSigned = Builder.getInt1(0);
   Value *inputInterpretation =
-      CI->getArgOperand(HLOperandIndex::kInputInterpretationIdx);
-  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kMatrixBufferIdx);
-  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kMatrixOffsetIdx);
+      CI->getArgOperand(HLOperandIndex::kMatVecMulInputInterpretationIdx);
+  // matrix
+  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixBufferIdx);
+  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixOffsetIdx);
   Value *matrixInterpretation =
-      CI->getArgOperand(HLOperandIndex::kMatrixInterpretationIdx);
-  Value *matrixM = CI->getArgOperand(HLOperandIndex::kMatrixMIdx);
-  Value *matrixK = CI->getArgOperand(HLOperandIndex::kMatrixKIdx);
-  Value *matrixLayout = CI->getArgOperand(HLOperandIndex::kMatrixLayoutIdx);
+      CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixInterpretationIdx);
+  Value *matrixM = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixMIdx);
+  Value *matrixK = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixKIdx);
+  Value *matrixLayout = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixLayoutIdx);
   Value *matrixTranspose =
-      CI->getArgOperand(HLOperandIndex::kMatrixTransposeIdx);
-  Value *matrixStride = CI->getArgOperand(HLOperandIndex::kMatrixStrideIdx);
+      CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixTransposeIdx);
+  Value *matrixStride = CI->getArgOperand(HLOperandIndex::kMatVecMulMatrixStrideIdx);
+  // output
   Value *isOutputSigned = Builder.getInt1(0);
 
   Function *dxilFunc =
-       hlslOP->GetOpFunc(opcode, {CI->getArgOperand(HLOperandIndex::kOutputVectorIdx)
+       hlslOP->GetOpFunc(opcode, {CI->getArgOperand(HLOperandIndex::kMatVecMulOutputVectorIdx)
                   ->getType()
                   ->getPointerElementType(), inputVector->getType()});
 
@@ -6293,11 +6296,111 @@ Value *TranslateMatVecMul(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
        matrixOffset, matrixInterpretation, matrixM, matrixK, matrixLayout,
        matrixTranspose, matrixStride, isOutputSigned});
 
-  Value *OutParam = CI->getArgOperand(HLOperandIndex::kOutputVectorIdx);
+  Value *OutParam = CI->getArgOperand(HLOperandIndex::kMatVecMulOutputVectorIdx);
   Builder.CreateStore(NewCI, OutParam);
 
   return nullptr;
 }
+
+Value *TranslateMatVecMulAdd(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
+                          HLOperationLowerHelper &helper,
+                          HLObjectOperationLowerHelper *pObjHelper,
+                          bool &Translated) {
+
+  hlsl::OP *hlslOP = &helper.hlslOP;
+  IRBuilder<> Builder(CI);
+
+  Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
+  // input vector
+  Value *inputVector = CI->getArgOperand(HLOperandIndex::kMatVecMulAddInputVectorIdx);
+  Value *isInputSigned = Builder.getInt1(0);
+  Value *inputInterpretation =
+      CI->getArgOperand(HLOperandIndex::kMatVecMulAddInputInterpretationIdx);
+ // matrix
+  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixBufferIdx);
+  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixOffsetIdx);
+  Value *matrixInterpretation =
+      CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixInterpretationIdx);
+  Value *matrixM = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixMIdx);
+  Value *matrixK = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixKIdx);
+  Value *matrixLayout = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixLayoutIdx);
+  Value *matrixTranspose =
+      CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixTransposeIdx);
+  Value *matrixStride = CI->getArgOperand(HLOperandIndex::kMatVecMulAddMatrixStrideIdx);
+  // bias
+  Value *biasBuffer = CI->getArgOperand(HLOperandIndex::kMatVecMulAddBiasBufferIdx);
+  Value *biasOffset = CI->getArgOperand(HLOperandIndex::kMatVecMulAddBiasOffsetIdx);
+  Value *biasInterpretation = CI->getArgOperand(HLOperandIndex::kMatVecMulAddBiasInterpretationIdx);
+  // output
+  Value *isOutputSigned = Builder.getInt1(0);
+
+  Function *dxilFunc =
+       hlslOP->GetOpFunc(opcode, {CI->getArgOperand(HLOperandIndex::kMatVecMulAddOutputVectorIdx)
+                  ->getType()
+                  ->getPointerElementType(), inputVector->getType()});
+
+  Value *NewCI = Builder.CreateCall(
+      dxilFunc, {opArg, inputVector, isInputSigned, inputInterpretation,
+                 matrixBuffer, matrixOffset, matrixInterpretation, matrixM,
+                 matrixK, matrixLayout, matrixTranspose, matrixStride,
+                 biasBuffer, biasOffset, biasInterpretation, isOutputSigned});
+
+  Value *OutParam = CI->getArgOperand(HLOperandIndex::kMatVecMulAddOutputVectorIdx);
+  Builder.CreateStore(NewCI, OutParam);
+
+  return nullptr;
+}
+
+Value *TranslateOuterProductAccumulate(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
+                          HLOperationLowerHelper &helper,
+                          HLObjectOperationLowerHelper *pObjHelper,
+                          bool &Translated) {
+
+  hlsl::OP *hlslOP = &helper.hlslOP;
+  IRBuilder<> Builder(CI);
+
+  Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
+  // input
+  Value *inputVector1 = CI->getArgOperand(HLOperandIndex::kOuterProdAccInputVec1Idx);
+  Value *inputVector2 = CI->getArgOperand(HLOperandIndex::kOuterProdAccInputVec2Idx);
+  // matrix
+  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kOuterProdAccMatrixIdx);
+  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kOuterProdAccMatrixOffsetIdx);
+  Value *matrixInterpretation =
+      CI->getArgOperand(HLOperandIndex::kOuterProdAccMatrixInterpretationIdx);
+  Value *matrixLayout = CI->getArgOperand(HLOperandIndex::kOuterProdAccMatrixLayoutIdx);
+  Value *matrixStride = CI->getArgOperand(HLOperandIndex::kOuterProdAccMatrixStrideIdx);  
+
+  Function *dxilFunc =
+       hlslOP->GetOpFunc(opcode, {inputVector1->getType(), inputVector2->getType()});
+
+  return Builder.CreateCall(
+      dxilFunc, {opArg, inputVector1, inputVector2, matrixBuffer, matrixOffset,
+                 matrixInterpretation, matrixLayout, matrixStride});
+}
+
+Value *TranslateVectorAccumulate(CallInst *CI, IntrinsicOp IOP, OP::OpCode opcode,
+                          HLOperationLowerHelper &helper,
+                          HLObjectOperationLowerHelper *pObjHelper,
+                          bool &Translated) {
+
+  hlsl::OP *hlslOP = &helper.hlslOP;
+  IRBuilder<> Builder(CI);
+
+  Constant *opArg = hlslOP->GetU32Const((unsigned)opcode);
+  // input
+  Value *inputVector = CI->getArgOperand(HLOperandIndex::kVectorAccInputVecIdx);
+  // matrix
+  Value *matrixBuffer = CI->getArgOperand(HLOperandIndex::kVectorAccMatrixIdx);
+  Value *matrixOffset = CI->getArgOperand(HLOperandIndex::kVectorAccMatrixOffsetIdx);
+  
+  Function *dxilFunc =
+       hlslOP->GetOpFunc(opcode, {inputVector->getType()});
+
+  return Builder.CreateCall(dxilFunc,
+                            {opArg, inputVector, matrixBuffer, matrixOffset});
+}
+
 } // namespace
 
 // Lower table.
@@ -6944,11 +7047,11 @@ IntrinsicLower gLowerTable[] = {
      DXIL::OpCode::NumOpCodes},
     {IntrinsicOp::IOP___builtin_MatVecMul, TranslateMatVecMul,
      DXIL::OpCode::MatVecMul},
-    {IntrinsicOp::IOP___builtin_MatVecMulAdd, TranslateMatVecMul,
+    {IntrinsicOp::IOP___builtin_MatVecMulAdd, TranslateMatVecMulAdd,
      DXIL::OpCode::MatVecMulAdd},
-    {IntrinsicOp::IOP___builtin_OuterProductAccumulate, TranslateMatVecMul,
+    {IntrinsicOp::IOP___builtin_OuterProductAccumulate, TranslateOuterProductAccumulate,
      DXIL::OpCode::OuterProductAccumulate},
-    {IntrinsicOp::IOP___builtin_VectorAccumulate, TranslateMatVecMul,
+    {IntrinsicOp::IOP___builtin_VectorAccumulate, TranslateVectorAccumulate,
      DXIL::OpCode::VectorAccumulate},
 };
 } // namespace

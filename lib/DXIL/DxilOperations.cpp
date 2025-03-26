@@ -522,8 +522,8 @@ const OP::OpCodeProperty OP::m_OpCodeProps[(unsigned)OP::OpCode::NumOpCodes] = {
   {  OC::MatVecMulAdd,            "MatVecMulAdd",             OCC::MatVecMulAdd,             "matVecMulAdd",              { false, false, false, false, false, false, false, false, false, false, false, false,  true}, Attribute::None     , {{0x800},{0x800}}, {{0xc6},{0xc6}} },
 
   // Linear Algebra Intrinsics Training                                                                                      void,     h,     f,     d,    i1,    i8,   i16,   i32,   i64,   udt,   obj,   vec,  function attribute, ext oload, vec oload
-  {  OC::OuterProductAccumulate,  "OuterProductAccumulate",   OCC::OuterProductAccumulate,   "outerProductAccumulate",    { false, false, false, false, false, false, false, false, false, false, false,  true, false}, Attribute::None     , {{0x0},{0x0}}, {{0x1ce},{0x0}} },
-  {  OC::VectorAccumulate,        "VectorAccumulate",         OCC::VectorAccumulate,         "vectorAccumulate",          { false, false, false, false, false, false, false, false, false, false, false,  true, false}, Attribute::None     , {{0x0},{0x0}}, {{0x1ce},{0x0}} },
+  {  OC::OuterProductAccumulate,  "OuterProductAccumulate",   OCC::OuterProductAccumulate,   "outerProductAccumulate",    { false, false, false, false, false, false, false, false, false, false, false, false,  true}, Attribute::None     , {{0x800},{0x800}}, {{0xc6},{0xc6}} },
+  {  OC::VectorAccumulate,        "VectorAccumulate",         OCC::VectorAccumulate,         "vectorAccumulate",          { false, false, false, false, false, false, false, false, false, false, false,  true, false}, Attribute::None     , {{0x0},{0x0}}, {{0xc6},{0x0}} },
 };
 // OPCODE-OLOADS:END
 
@@ -2036,7 +2036,7 @@ Function *OP::GetOpFunc(OpCode opCode, Type *pOverloadType) {
                       case OpCode::MatVecMulAdd:           EXT(0);      A(pI32); EXT(1);  A(pI1);  A(pI32); A(pRes); A(pI32); A(pI32); A(pI32); A(pI32); A(pI32); A(pI1);  A(pI32); A(pRes); A(pI32); A(pI32); A(pI1);  break;
                     
                         // Linear Algebra Intrinsics Training
-                      case OpCode::OuterProductAccumulate: A(pV);       A(pI32); A(pETy); A(pETy); A(pRes); A(pI32); A(pI32); A(pI32); A(pI32); break;
+                      case OpCode::OuterProductAccumulate: A(pV);       A(pI32); EXT(0);  EXT(1);  A(pRes); A(pI32); A(pI32); A(pI32); A(pI32); break;
                       case OpCode::VectorAccumulate:       A(pV);       A(pI32); A(pETy); A(pRes); A(pI32); break;
   // OPCODE-OLOAD-FUNCS:END
   default:
@@ -2204,7 +2204,6 @@ llvm::Type *OP::GetOverloadType(OpCode opCode, llvm::Function *F) {
   case OpCode::WaveActiveAllEqual:
   case OpCode::CreateHandleForLib:
   case OpCode::WaveMatch:
-  case OpCode::OuterProductAccumulate:
   case OpCode::VectorAccumulate:
     if (FT->getNumParams() <= 1) return nullptr;
     return FT->getParamType(1);
@@ -2440,6 +2439,11 @@ llvm::Type *OP::GetOverloadType(OpCode opCode, llvm::Function *F) {
     if (FT->getNumParams() < 2)
       return nullptr;
     return llvm::StructType::get(Ctx, {FT->getReturnType(), FT->getParamType(1)});
+  
+  case OpCode::OuterProductAccumulate:
+    if (FT->getNumParams() < 3)
+      return nullptr;
+    return llvm::StructType::get(Ctx, {FT->getParamType(1), FT->getParamType(2)});
   
   // OPCODE-OLOAD-TYPES:END
   default:
